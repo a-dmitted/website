@@ -1,52 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:website/controllers/navigation_controller.dart';
+import 'package:website/routing/route_information_parser.dart';
+import 'package:website/routing/router_delegate.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Alexander Dmitriev',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.blue,
-
-        textTheme: const TextTheme(
-          headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold, color: Colors.white),
-        )
-      ),      
-      home: const MyHomePage(title: 'Alexander Dmitriev Home Page'),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
+class _MyAppState extends State<MyApp> {
+  late final NavigationController _navigationController;
+  late final SimpleRouterDelegate _simpleRouterDelegate;
 
-  final String title;
+  @override
+  void initState() {
+    _navigationController = NavigationController();
+
+    _simpleRouterDelegate = SimpleRouterDelegate(
+        navigationController: _navigationController,
+        builder: (BuildContext context) => _navigationController.renderApp());
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: MediaQuery.of(context).size.shortestSide * 0.15,
-              backgroundColor: Colors.white,
-            ),
-            Text(
-              'Welcome',
-              style: Theme.of(context).textTheme.headline1,
-            )
-          ],
-        ),
-      ),
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => _navigationController)
+        ],
+        child: MaterialApp.router(
+          routerDelegate: _simpleRouterDelegate,
+          routeInformationParser: SimpleRouteInformationParser(),
+          theme: ThemeData(
+              primarySwatch: Colors.blue,
+              scaffoldBackgroundColor: Colors.blue,
+              textTheme: const TextTheme(
+                headline1: TextStyle(
+                    fontSize: 72.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue),
+              )),
+        ));
   }
 }
